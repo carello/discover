@@ -14,7 +14,7 @@ def get_args():
 args = get_args()
 hostname = args.h_name
 
-switches = ['10.91.86.244']
+switches = ['enter_switch_ip']
 # ip_addr = '10.239.10.101'
 # hostname = "unreal"
 
@@ -26,8 +26,8 @@ except StandardError:
 
 
 # url='http://YOURIP/ins'
-switchuser='admin'
-switchpassword='9letmein'
+switchuser='enter_user_name'
+switchpassword='enter_password'
 
 def get_mac():
 
