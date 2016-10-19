@@ -60,5 +60,3 @@ def get_mac():
         return mac
 
 print hostname + ' ' + get_mac()
-
-
