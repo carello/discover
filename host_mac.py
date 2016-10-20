@@ -7,6 +7,7 @@ import argparse
 
 switches = ['10.91.86.234', '10.91.86.244']
 
+
 def get_args():
     parser = argparse.ArgumentParser(description="Grab the MAC")
     parser.add_argument('-n', dest='host_name',  required=True, help='Enter hostname')
@@ -20,23 +21,8 @@ def resolv_hostname(hst_name):
         r_host_ip = socket.gethostbyname(hst_name)
         return r_host_ip
     except StandardError:
-        print "Can't resolve hostname"
+        print "%% Can't resolve hostname"
         sys.exit(0)
-
-
-def get_sess():
-    s = requests.Session()
-    s.auth = (switchuser, switchpassword)
-    s.headers = {'content-type':'application/json'}
-    s.payload = {"ins_api": {
-                    "version": "1.0",
-                    "type": "cli_show",
-                    "chunk": "0",
-                    "sid": "1",
-                    "input": "sh ip arp " + r_host_ip,
-                    "output_format": "json"}
-                }
-    return s
 
 
 def get_mac():
@@ -46,13 +32,12 @@ def get_mac():
         try:
             response = s.post(url, data=json.dumps(s.payload)).json()
         except StandardError:
-            print "Can't log into switch: " + sw
+            print "%% Can't log into switch: " + sw
             continue
 
         resp = str(response['ins_api']['outputs']['output']['code'])
-
         if resp != '200':
-            print "ERROR: Logged into device but unable to get data" + sw
+            print "%% ERROR: Logged into device but unable to get data" + sw
             sys.exit(0)
 
         cnt = response['ins_api']['outputs']['output']['body']['TABLE_vrf']['ROW_vrf']['cnt-total']
@@ -61,22 +46,32 @@ def get_mac():
                 mac = response['ins_api']['outputs']['output']['body']['TABLE_vrf']['ROW_vrf']['TABLE_adj']['ROW_adj']['mac']
                 return mac, sw
             except StandardError:
-                print "Can't find MAC"
+                print "%% Can't find MAC"
 
 
 if __name__ == '__main__':
     args = get_args()
-    switchuser = args.login_user
-    switchpassword = args.login_pass
+    switch_user = args.login_user
+    switch_password = args.login_pass
     hostname = args.host_name
 
     r_host_ip = resolv_hostname(hostname)
 
-    s = get_sess()
+    s = requests.Session()
+    s.auth = (switch_user, switch_password)
+    s.headers = {'content-type': 'application/json'}
+    s.payload = {"ins_api": {
+        "version": "1.0",
+        "type": "cli_show",
+        "chunk": "0",
+        "sid": "1",
+        "input": "sh ip arp " + r_host_ip,
+        "output_format": "json"}
+        }
 
     page = get_mac()
 
     if page is None:
-        print "Can't find MAC"
+        print "%% Can't find MAC"
     else:
         print "\nHOSTNAME: {} | MAC: {} | SWITCH: {}".format(hostname, page[0], page[1])
